@@ -2,10 +2,10 @@ import streamlit as st
 import aiohttp
 import asyncio
 
-# Set up dark theme with monospace font
+# Apply Dark Theme with Monospace Font
 st.set_page_config(page_title="VIN Generator", layout="centered")
 
-# Manufacturer WMI codes
+# Define Manufacturer WMI codes
 WMI_CODES = {
     "Toyota": "JTD", "Ford": "1FT", "Honda": "1HG", "BMW": "WBA", "Mercedes": "WDB",
     "Chevrolet": "1GC", "Tesla": "5YJ", "Audi": "WAU", "Nissan": "1N4", "Hyundai": "KMH",
@@ -15,10 +15,21 @@ WMI_CODES = {
     "Lamborghini": "ZHW", "Bugatti": "VF9", "Rolls-Royce": "SCA", "Bentley": "SCB"
 }
 
-# API Endpoint
+# Function to fetch a real VIN asynchronously
 API_URL = "https://randomvin.com/getvin.php?type=real"
 
-# Apply custom CSS for large VIN display
+async def fetch_vin(session):
+    async with session.get(API_URL) as response:
+        return await response.text()
+
+async def fetch_valid_vin(manufacturer_wmi):
+    async with aiohttp.ClientSession() as session:
+        while True:
+            response = await fetch_vin(session)
+            if response.startswith(manufacturer_wmi):
+                return response.strip()
+
+# Apply Custom CSS for Large VIN Display
 st.markdown("""
     <style>
     body {
@@ -46,21 +57,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Async function to make parallel API calls
-async def fetch_vins(session, manufacturer_wmi, num_requests=10):
-    tasks = [session.get(API_URL) for _ in range(num_requests)]
-    responses = await asyncio.gather(*tasks)  # Run requests in parallel
-    vins = [await r.text() for r in responses]
-    return next((vin.strip() for vin in vins if vin.startswith(manufacturer_wmi)), None)
-
-# Function to fetch VIN with async execution
-async def get_vin(manufacturer_wmi):
-    async with aiohttp.ClientSession() as session:
-        vin = await fetch_vins(session, manufacturer_wmi)
-        return vin if vin else "VIN Not Found"
-
 # Streamlit UI
-st.title("🚗 Super-Fast VIN Generator")
+st.title("🚗 Random VIN Generator")
 
 # Dropdown Menu for Car Manufacturers
 st.markdown('<div class="dropdown-container">', unsafe_allow_html=True)
@@ -70,7 +68,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Generate VIN Button
 if st.button("Generate VIN"):
     manufacturer_wmi = WMI_CODES[selected_manufacturer]
-    valid_vin = asyncio.run(get_vin(manufacturer_wmi))
-
+    valid_vin = asyncio.run(fetch_valid_vin(manufacturer_wmi))
+    
     # Display VIN in Large Styled Box
     st.markdown(f'<div class="big-vin">{valid_vin}</div>', unsafe_allow_html=True)
