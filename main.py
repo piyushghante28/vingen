@@ -46,6 +46,9 @@ VIN_VALUES = {
 # VIN character weights for checksum calculation
 VIN_WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
 
+# Valid year codes
+YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789"
+
 # Function to calculate the VIN check digit
 def calculate_check_digit(vin):
     total = sum(VIN_VALUES[vin[i]] * VIN_WEIGHTS[i] for i in range(17))
@@ -59,8 +62,8 @@ def generate_vin(manufacturer):
     
     wmi = WMI_CODES[manufacturer]  # First 3 characters (WMI)
     vds = ''.join(random.choices("ABCDEFGHJKLMNPRSTUVWXYZ0123456789", k=5))  # 4-8 characters (VDS, excluding check digit)
-    year_code = random.choice("ABCDEFGHJKLMNPRSTVWXY123456789")  # 10th character (Year Code, skipping I, O, Q)
-    plant_code = random.choice("ABCDEFGHJKLMNPRSTUVWXYZ")  # 11th character (Assembly Plant)
+    year_code = random.choice(YEAR_CODES)  # 10th character (Year Code, valid set)
+    plant_code = random.choice("ABCDEFGHJKLMNPRSTUVWXYZ0123456789")  # 11th character (Assembly Plant, extended options)
     serial = ''.join(random.choices(string.digits, k=6))  # 12-17 characters (Serial Number)
     
     vin_partial = f"{wmi}{vds}0{year_code}{plant_code}{serial}"
