@@ -3,7 +3,8 @@ import aiohttp
 import asyncio
 
 # Apply Dark Theme with Monospace Font
-st.set_page_config(page_title="VIN Generator", layout="centered")
+st.set_page_config(page_title="VIN Generator", layout="centered",page_icon="https://cdn-icons-png.flaticon.com/512/846/846338.png")
+
 
 # Define Manufacturer WMI codes
 WMI_CODES = {
