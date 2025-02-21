@@ -46,12 +46,13 @@ VIN_VALUES = {
 # VIN character weights for checksum calculation
 VIN_WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
 
-# Valid year codes mapping for 2010-2029 production years
+# Valid year codes mapping from 1980 to 2029
 YEAR_CODES = {
-    2010: "A", 2011: "B", 2012: "C", 2013: "D", 2014: "E", 2015: "F",
-    2016: "G", 2017: "H", 2018: "J", 2019: "K", 2020: "L", 2021: "M",
-    2022: "N", 2023: "P", 2024: "R", 2025: "S", 2026: "T", 2027: "V",
-    2028: "W", 2029: "X"
+    **{1980 + i: chr(65 + i) for i in range(17) if chr(65 + i) not in "IOQ"},
+    **{2010: "A", 2011: "B", 2012: "C", 2013: "D", 2014: "E", 2015: "F",
+       2016: "G", 2017: "H", 2018: "J", 2019: "K", 2020: "L", 2021: "M",
+       2022: "N", 2023: "P", 2024: "R", 2025: "S", 2026: "T", 2027: "V",
+       2028: "W", 2029: "X"}
 }
 
 # Function to calculate the VIN check digit
