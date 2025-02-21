@@ -53,24 +53,7 @@ st.markdown("""
         box-shadow: 0px 4px 10px rgba(0,255,204,0.3);
         font-family: monospace;
         text-align: center;
-    padding: 20px;
-    background: #b8c6df;
-    background: -moz-linear-gradient(top, #b8c6df 0%, #6d88b7 100%);
-    /* background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #b8c6df), color-stop(100%, #6d88b7)); */
-    /* background: -webkit-linear-gradient(top, #b8c6df 0%, #6d88b7 100%); */
-    background: -o-linear-gradient(top, #b8c6df 0%, #6d88b7 100%);
-    background: -ms-linear-gradient(top, #b8c6df 0%, #6d88b7 100%);
-    /* background: linear-gradient(to bottom, #b8c6df 0%, #6d88b7 100%); */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b8c6df', endColorstr='#6d88b7',GradientType=0 );
-    border-radius: 20px;
-    -moz-border-radius: 20px;
-    -webkit-border-radius: 20px;
-    -webkit-box-shadow: 3px 2px 5px 0px rgba(163, 163, 163, 1);
-    -moz-box-shadow: 3px 2px 5px 0px rgba(163, 163, 163, 1);
-    box-shadow: 3px 2px 5px 0px rgba(163, 163, 163, 1);
-    /* border: 1px #1a2638 solid; */
-    width: 800px;
-    margin: 0 auto;
+    
     }
     .dropdown-container {
         text-align: center;
