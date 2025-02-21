@@ -35,23 +35,36 @@ WMI_CODES = {
     "Bentley": "SCB"
 }
 
-# Function to generate a random VIN with proper validation
+# VIN character weights for checksum calculation
+VIN_WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
+VIN_VALUES = {char: i for i, char in enumerate("0123456789.ABCDEFGH..JKLMN.P.R..STUVWXYZ")}
+
+# Function to calculate the VIN check digit
+def calculate_check_digit(vin):
+    total = sum(VIN_VALUES[vin[i]] * VIN_WEIGHTS[i] for i in range(17) if vin[i] in VIN_VALUES)
+    remainder = total % 11
+    return "X" if remainder == 10 else str(remainder)
+
+# Function to generate a random VIN with valid check digit
 def generate_vin(manufacturer):
     if manufacturer not in WMI_CODES:
         return "Invalid Manufacturer"
     
     wmi = WMI_CODES[manufacturer]  # First 3 characters (WMI)
-    vds = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))  # 4-9 characters (VDS)
+    vds = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))  # 4-8 characters (VDS, excluding check digit)
     year_code = random.choice("ABCDEFGHJKLMNPRSTVWXY123456789")  # 10th character (Year Code, skipping I, O, Q)
     plant_code = random.choice(string.ascii_uppercase)  # 11th character (Assembly Plant)
     serial = ''.join(random.choices(string.digits, k=6))  # 12-17 characters (Serial Number)
     
-    vin = f"{wmi}{vds}{year_code}{plant_code}{serial}"
+    vin_partial = f"{wmi}{vds}0{year_code}{plant_code}{serial}"
+    check_digit = calculate_check_digit(vin_partial)
+    vin = f"{wmi}{vds}{check_digit}{year_code}{plant_code}{serial}"
+    
     return vin
 
 # Streamlit UI
-st.title("Random VIN Generator By Piyush")
-st.write("Select a manufacturer to generate a random VIN.")
+st.title("Random VIN Generator")
+st.write("Select a manufacturer to generate a valid random VIN.")
 
 manufacturer = st.selectbox("Select Manufacturer", list(WMI_CODES.keys()))
 
