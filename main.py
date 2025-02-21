@@ -43,7 +43,7 @@ st.markdown("""
     .big-vin {
         font-size: 50px;
         font-weight: bold;
-        color: #00ffcc;
+        color: #dfe3eb;
         text-align: center;
         padding: 20px;
         background: #b8c6df;
