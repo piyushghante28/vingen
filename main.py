@@ -80,7 +80,7 @@ st.title("🚗 Random VIN Generator")
 # Dropdown Menu for Car Manufacturers
 st.markdown('<div class="dropdown-container">', unsafe_allow_html=True)
 selected_manufacturer = st.selectbox("Select Manufacturer", list(WMI_CODES.keys()))
-st.markdown('</div>', unsafe_allow_html=True)
+#st.markdown('</div>', unsafe_allow_html=True)
 
 # Generate VIN by Manufacturer Button
 if st.button("Generate VIN by Manufacturer"):
