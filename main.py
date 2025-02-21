@@ -62,7 +62,6 @@ st.markdown("""
         position: fixed;
         bottom: 0;
         width: 100%;
-        text-align: center;
         padding: 10px;
         background-color: #121212;
         color: #00ffcc;
@@ -96,7 +95,7 @@ if st.button("Dummy VIN Generator"):
     dummy_vin = asyncio.run(fetch_vin(FAKE_VIN_API))
     st.markdown(f'<div class="big-vin">{dummy_vin.strip()}</div>', unsafe_allow_html=True)
 # Footer
-st.markdown('<div class="footer">Made By Piyush</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">Made By Piyush Ghante</div>', unsafe_allow_html=True)
 
 # import streamlit as st
 # import aiohttp
