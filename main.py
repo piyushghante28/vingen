@@ -25,7 +25,7 @@ async def fetch_valid_vin(manufacturer_wmi, log):
     attempts = 0
     async with aiohttp.ClientSession() as session:
         while True:
-            tasks = [fetch_vin(session) for _ in range(5)]  # Make 5 requests in parallel
+            tasks = [fetch_vin(session) for _ in range(50)]  # Make 5 requests in parallel
             responses = await asyncio.gather(*tasks)
             attempts += len(responses)
             
@@ -37,32 +37,32 @@ async def fetch_valid_vin(manufacturer_wmi, log):
             
             await asyncio.sleep(0.2)  # Reduce wait time
 
-# # Streamlit UI
-# st.title("Random VIN Generator")
-# st.sidebar.title("VIN Generation Log")
+# Streamlit UI
+st.title("Random VIN Generator")
+st.sidebar.title("VIN Generation Log")
 
-# # Log area
-# log = st.sidebar.empty()
-# log_data = []
+# Log area
+log = st.sidebar.empty()
+log_data = []
 
-# # Display buttons in a single row
-# grid_columns = st.columns(len(WMI_CODES))
+# Display buttons in a single row
+grid_columns = st.columns(len(WMI_CODES))
 
-# for index, (manufacturer, wmi) in enumerate(WMI_CODES.items()):
-#     with grid_columns[index]:
-#         if st.button(manufacturer):
-#             valid_vin = asyncio.run(fetch_valid_vin(wmi, log_data))
-#             st.markdown(
-#                 f"""
-#                 <div style='text-align: center; padding: 10px; background: linear-gradient(to bottom, #5A7CA6, #2E4C6D); color: white; font-size: 24px; font-weight: bold; border-radius: 8px;'>
-#                     {valid_vin}
-#                 </div>
-#                 """,
-#                 unsafe_allow_html=True
-#             )
+for index, (manufacturer, wmi) in enumerate(WMI_CODES.items()):
+    with grid_columns[index]:
+        if st.button(manufacturer):
+            valid_vin = asyncio.run(fetch_valid_vin(wmi, log_data))
+            st.markdown(
+                f"""
+                <div style='text-align: center; padding: 10px; background: linear-gradient(to bottom, #5A7CA6, #2E4C6D); color: white; font-size: 24px; font-weight: bold; border-radius: 8px;'>
+                    {valid_vin}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-# # Update log in the sidebar
-# log.write("\n".join(log_data[-10:]))  # Show last 10 attempts
+# Update log in the sidebar
+log.write("\n".join(log_data[-10:]))  # Show last 10 attempts
 
 
 # # import streamlit as st
