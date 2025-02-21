@@ -47,10 +47,10 @@ log = st.sidebar.empty()
 log_data = []
 
 # Display buttons in a single row
-grid_columns = st.columns(len(WMI_CODES)*2)
+grid_columns = st.columns(len(WMI_CODES))
 
 for index, (manufacturer, wmi) in enumerate(WMI_CODES.items()):
-    with grid_columns[index*2]:
+    with grid_columns[index]:
         if st.button(manufacturer):
             valid_vin = asyncio.run(fetch_valid_vin(wmi, log_data))
             st.markdown(
