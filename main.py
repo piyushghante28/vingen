@@ -63,7 +63,7 @@ st.markdown("""
         bottom: 0;
         width: 100%;
         padding: 10px;
-        background-color: #121212;
+        
         color: #00ffcc;
         font-family: monospace;
     }
