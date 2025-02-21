@@ -78,12 +78,12 @@ with col1:
         st.markdown(f'<div class="big-vin">{valid_vin}</div>', unsafe_allow_html=True)
 
 with col2:
-    if st.button("Real VIN Generator"):
+    if st.button("Random Real VIN Generator "):
         real_vin = asyncio.run(fetch_vin(REAL_VIN_API))
         st.markdown(f'<div class="big-vin">{real_vin.strip()}</div>', unsafe_allow_html=True)
 
 with col3:
-    if st.button("Dummy VIN Generator"):
+    if st.button("Random Dummy VIN Generator"):
         dummy_vin = asyncio.run(fetch_vin(FAKE_VIN_API))
         st.markdown(f'<div class="big-vin">{dummy_vin.strip()}</div>', unsafe_allow_html=True)
 
