@@ -47,7 +47,7 @@ log = st.sidebar.empty()
 log_data = []
 
 # Display buttons in a single row
-grid_columns = st.columns(len(WMI_CODES)* 4)
+grid_columns = st.columns(len(WMI_CODES))
 
 for index, (manufacturer, wmi) in enumerate(WMI_CODES.items()):
     with grid_columns[index]:
