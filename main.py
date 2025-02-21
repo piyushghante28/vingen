@@ -31,6 +31,7 @@ async def fetch_valid_vin(manufacturer_wmi):
             response = await future
             if response.startswith(manufacturer_wmi):  # Validate VIN
                 return response.strip()
+    return None  # Return None if no valid VIN found
 
 # Apply Custom CSS for Large VIN Display
 st.markdown("""
@@ -71,12 +72,13 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Generate VIN Button
 if st.button("Generate VIN"):
     manufacturer_wmi = WMI_CODES[selected_manufacturer]
-    
-    async def generate_vin():
-        valid_vin = await fetch_valid_vin(manufacturer_wmi)
-        st.markdown(f'<div class="big-vin">{valid_vin}</div>', unsafe_allow_html=True)
+    valid_vin = asyncio.run(fetch_valid_vin(manufacturer_wmi))  # ✅ Correct way to run async in Streamlit
 
-    asyncio.create_task(generate_vin())  # Run async function in Streamlit
+    if valid_vin:
+        st.markdown(f'<div class="big-vin">{valid_vin}</div>', unsafe_allow_html=True)
+    else:
+        st.error("No valid VIN found. Try again!")
+
 
 # import streamlit as st
 # import aiohttp
