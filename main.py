@@ -48,7 +48,7 @@ st.markdown("""
        
         border-radius: 15px;
         margin-top: 20px;
-        box-shadow: 0px 4px 10px rgba(0,255,204,0.3);
+       
         font-family: monospace;
     }
     .dropdown-container {
