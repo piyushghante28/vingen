@@ -1,4 +1,3 @@
-
 import streamlit as st
 import aiohttp
 import asyncio
@@ -21,7 +20,6 @@ REAL_VIN_API = "https://randomvin.com/getvin.php?type=real"
 FAKE_VIN_API = "https://randomvin.com/getvin.php?type=fake"
 
 # Async Function to Fetch VIN
-test
 async def fetch_vin(api_url):
     async with aiohttp.ClientSession() as session:
         async with session.get(api_url) as response:
@@ -88,6 +86,7 @@ with col3:
     if st.button("Dummy VIN Generator"):
         dummy_vin = asyncio.run(fetch_vin(FAKE_VIN_API))
         st.markdown(f'<div class="big-vin">{dummy_vin.strip()}</div>', unsafe_allow_html=True)
+
 
 # import streamlit as st
 # import aiohttp
