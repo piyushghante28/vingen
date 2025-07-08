@@ -55,7 +55,7 @@ def save_vin(vin, make):
             f.write(make + "\n")
 
     vin_counter += 1
-    if vin_counter % 25 == 0:
+    if vin_counter % 5 == 0:
         auto_git_commit()
 
 async def fetch_vins_forever():
