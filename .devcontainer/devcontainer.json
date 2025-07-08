@@ -1,0 +1,4 @@
+{
+  "name": "VIN Collector",
+  "postCreateCommand": "nohup python3 vin_collector.py > vin_logs.out 2>&1 &"
+}
