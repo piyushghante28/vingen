@@ -1,11 +1,16 @@
+# app.py
 import streamlit as st
-import aiohttp
+import random
 import asyncio
+import aiohttp
 import os
-import pandas as pd
-import plotly.express as px
 
-# ========== WMI Definitions ==========
+st.set_page_config(
+    page_title="VIN Generator",
+    layout="centered",
+    page_icon="https://cdn-icons-png.flaticon.com/512/846/846338.png"
+)
+
 WMI_CODES = {
     "Toyota": "JTD", "Ford": "1FT", "Honda": "1HG", "BMW": "WBA", "Mercedes": "WDB",
     "Chevrolet": "1GC", "Tesla": "5YJ", "Audi": "WAU", "Nissan": "1N4", "Hyundai": "KMH",
@@ -16,131 +21,93 @@ WMI_CODES = {
 }
 
 REAL_VIN_API = "https://randomvin.com/getvin.php?type=real"
+FAKE_VIN_API = "https://randomvin.com/getvin.php?type=fake"
 
-# ========== Utility Functions ==========
-
-def load_existing_makes(file_path="make_name.txt"):
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return set(line.strip() for line in f.readlines())
-    return set()
-
-def append_make(make_name, file_path="make_name.txt"):
-    with open(file_path, "a") as f:
-        f.write(f"{make_name}\n")
-
-def append_vin(vin, make_name):
-    file_path = f"make_{make_name}.txt"
-    with open(file_path, "a") as f:
-        f.write(f"{vin}\n")
-
-def get_manufacturer_from_vin(vin):
-    for make, wmi in WMI_CODES.items():
-        if vin.startswith(wmi):
-            return make
-    return None
-
-def get_region(vin):
-    prefix = vin[0].upper() if vin else "?"
-    if prefix in "12345":
-        return "North America"
-    elif prefix in "JJKLMNOPQR":
-        return "Asia"
-    elif prefix in "STUVWXYZ":
-        return "Europe"
-    elif prefix in "ABCDEFGH":
-        return "Africa"
-    elif prefix == "L":
-        return "China"
-    elif prefix == "K":
-        return "Korea"
-    return "Unknown"
-
-async def fetch_single_vin():
+async def fetch_vin(api_url):
     async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(REAL_VIN_API) as response:
-                vin = (await response.text()).strip()
-                return vin
-        except Exception as e:
-            st.error(f"Error fetching VIN: {e}")
-            return None
+        async with session.get(api_url) as response:
+            return await response.text()
 
-def update_local_storage(vin):
-    make = get_manufacturer_from_vin(vin)
-    if not make:
-        return None
+async def fetch_valid_vin(manufacturer_wmi):
+    async with aiohttp.ClientSession() as session:
+        while True:
+            response = await fetch_vin(REAL_VIN_API)
+            if response.startswith(manufacturer_wmi):
+                return response.strip()
 
-    append_vin(vin, make)
-    existing_makes = load_existing_makes()
-    if make not in existing_makes:
-        append_make(make)
-    return make
+st.markdown("""
+    <style>
+    body {
+        background-color: #121212;
+        font-family: monospace;
+    }
+    .big-vin {
+        font-size: 50px;
+        font-weight: bold;
+        color: #0a0a0a;
+        text-align: center;
+        padding: 20px;
+        background: #b8c6df;
+        border-radius: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        box-shadow: #84a5e0;
+    }
+    .dropdown-container {
+        text-align: center;
+    }
+    .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        padding: 10px;
+        color: #00ffcc;
+        font-family: monospace;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# ========== Streamlit UI ==========
+st.title("🚗 Random VIN Generator")
 
-st.set_page_config(page_title="VIN Viewer", layout="wide", page_icon="🚗")
-st.title("🔁 Real-time VIN Collector + Archive Viewer")
+# Load makes from file or fallback to dict
+make_file = "vin_data/make_name.txt"
+if os.path.exists(make_file):
+    with open(make_file) as f:
+        available_makes = sorted(set(line.strip() for line in f))
+else:
+    available_makes = sorted(WMI_CODES.keys())
 
-# Collect Real-Time VIN
-if st.button("Generate & Store Real VIN"):
-    vin = asyncio.run(fetch_single_vin())
-    if vin:
-        make = update_local_storage(vin)
-        if make:
-            st.success(f"✅ VIN Saved for {make}: {vin}")
-        else:
-            st.warning(f"❌ Unknown WMI: {vin}")
-    else:
-        st.error("Failed to fetch VIN")
+selected_manufacturer = st.selectbox("Select Manufacturer", available_makes)
 
-# Load available makes
-makes = sorted(load_existing_makes())
-
-# Sidebar: Chart
-st.sidebar.subheader("📊 VIN Count per Make")
-vin_counts = {}
-for make in makes:
-    file_path = f"make_{make}.txt"
+if st.button("Generate VIN by Manufacturer"):
+    # Use existing txt file if available
+    file_path = f"vin_data/make_{selected_manufacturer}.txt"
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
-            vin_counts[make] = sum(1 for line in f if line.strip())
-
-if vin_counts:
-    chart_df = pd.DataFrame(vin_counts.items(), columns=["Manufacturer", "Count"])
-    fig = px.bar(chart_df, x="Manufacturer", y="Count", color="Count", title="VIN Count per Manufacturer")
-    st.sidebar.plotly_chart(fig, use_container_width=True)
-
-# Select Make
-if makes:
-    selected_make = st.selectbox("Select Manufacturer", makes)
-    vin_file = f"make_{selected_make}.txt"
-
-    if os.path.exists(vin_file):
-        with open(vin_file, "r") as f:
             vins = [line.strip() for line in f if line.strip()]
-
-        # Search VINs
-        query = st.text_input("🔍 Search VINs", "").strip().upper()
-        filtered_vins = [v for v in vins if query in v]
-
-        st.info(f"{len(filtered_vins)} / {len(vins)} VINs matched")
-        
-        df = pd.DataFrame(filtered_vins, columns=["VIN"])
-        df["Region"] = df["VIN"].apply(get_region)
-        st.dataframe(df.tail(20), use_container_width=True)
-
-        # Download
-        st.download_button(
-            label="📥 Download Filtered VINs",
-            data="\n".join(filtered_vins),
-            file_name=f"{selected_make}_filtered.txt",
-            mime="text/plain"
-        )
+        if vins:
+            st.markdown(f'<div class="big-vin">{random.choice(vins)}</div>', unsafe_allow_html=True)
+        else:
+            st.warning("No VINs available yet for this make.")
     else:
-        st.warning("VIN file not found for selected manufacturer")
-else:
-    st.warning("No manufacturers found yet.")
+        # Fallback to live fetch if file missing
+        manufacturer_wmi = WMI_CODES.get(selected_manufacturer)
+        if manufacturer_wmi:
+            valid_vin = asyncio.run(fetch_valid_vin(manufacturer_wmi))
+            st.markdown(f'<div class="big-vin">{valid_vin}</div>', unsafe_allow_html=True)
+        else:
+            st.error("Invalid WMI code. Cannot fetch VIN.")
+
+if st.button("Real VIN Generator (Random)"):
+    real_vin = asyncio.run(fetch_vin(REAL_VIN_API))
+    st.markdown(f'<div class="big-vin">{real_vin.strip()}</div>', unsafe_allow_html=True)
+
+if st.button("Dummy VIN Generator (Random)"):
+    dummy_vin = asyncio.run(fetch_vin(FAKE_VIN_API))
+    st.markdown(f'<div class="big-vin">{dummy_vin.strip()}</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="footer">Made By Piyush Ghante</div>', unsafe_allow_html=True)
+
 
 # import streamlit as st
 # import aiohttp
