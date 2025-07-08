@@ -20,12 +20,14 @@ WMI_CODES = {
 # Auto commit all changes to GitHub
 def auto_git_commit():
     try:
+        subprocess.run("git pull --rebase", shell=True, check=True)
         subprocess.run("git add .", shell=True, check=True)
         subprocess.run("git commit -m 'Auto: update VIN files and codebase'", shell=True, check=True)
         subprocess.run("git push", shell=True, check=True)
         print(f"[{datetime.now()}] ✨ Auto-committed all files to GitHub")
     except subprocess.CalledProcessError as e:
         print(f"[{datetime.now()}] ⚠️ Git commit failed: {e}")
+
 
 def get_make(vin):
     for make, wmi in WMI_CODES.items():
