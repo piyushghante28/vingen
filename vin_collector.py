@@ -1,12 +1,12 @@
+# vin_collector.py
 import aiohttp
 import asyncio
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# API Endpoint
 REAL_VIN_API = "https://randomvin.com/getvin.php?type=real"
 
-# Known WMI Codes for manufacturers
+# WMI Codes → Make mapping
 WMI_CODES = {
     "Toyota": "JTD", "Ford": "1FT", "Honda": "1HG", "BMW": "WBA", "Mercedes": "WDB",
     "Chevrolet": "1GC", "Tesla": "5YJ", "Audi": "WAU", "Nissan": "1N4", "Hyundai": "KMH",
@@ -16,61 +16,47 @@ WMI_CODES = {
     "Lamborghini": "ZHW", "Bugatti": "VF9", "Rolls-Royce": "SCA", "Bentley": "SCB"
 }
 
-# Load existing manufacturers from file
-def load_existing_makes(file_path="make_name.txt"):
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return set(line.strip() for line in f.readlines())
-    return set()
-
-# Append manufacturer name to file
-def append_make(make_name, file_path="make_name.txt"):
-    with open(file_path, "a") as f:
-        f.write(f"{make_name}\n")
-
-# Append VIN to specific make file
-def append_vin(vin, make_name):
-    filename = f"make_{make_name}.txt"
-    with open(filename, "a") as f:
-        f.write(f"{vin}\n")
-
-# Determine manufacturer based on VIN prefix
-def get_manufacturer_from_vin(vin):
+def get_make(vin):
     for make, wmi in WMI_CODES.items():
         if vin.startswith(wmi):
             return make
     return None
 
-# Function to collect VINs for 5 minutes
-async def collect_vins_for_5_minutes():
-    saved_makes = load_existing_makes()
+def save_vin(vin, make):
+    os.makedirs("vin_data", exist_ok=True)
+    make_file = os.path.join("vin_data", f"make_{make}.txt")
+    name_file = os.path.join("vin_data", "make_name.txt")
+
+    # Save VIN
+    with open(make_file, "a") as f:
+        f.write(vin + "\n")
+
+    # Save make name if new
+    if os.path.exists(name_file):
+        with open(name_file, "r") as f:
+            makes = set(line.strip() for line in f)
+    else:
+        makes = set()
+
+    if make not in makes:
+        with open(name_file, "a") as f:
+            f.write(make + "\n")
+
+async def fetch_vins_forever():
     async with aiohttp.ClientSession() as session:
-        end_time = datetime.now() + timedelta(minutes=5)
-        while datetime.now() < end_time:
+        while True:
             try:
                 async with session.get(REAL_VIN_API) as response:
                     vin = (await response.text()).strip()
-                    make = get_manufacturer_from_vin(vin)
+                    make = get_make(vin)
                     if make:
-                        append_vin(vin, make)
-                        if make not in saved_makes:
-                            append_make(make)
-                            saved_makes.add(make)
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Saved: {vin} → {make}")
+                        save_vin(vin, make)
+                        print(f"[{datetime.now()}] ✅ {vin} → {make}")
                     else:
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Ignored unknown WMI: {vin}")
+                        print(f"[{datetime.now()}] ❌ Unknown WMI: {vin}")
             except Exception as e:
-                print(f"[ERROR] {e}")
-            await asyncio.sleep(0.3)  # Slight delay between calls
+                print(f"[{datetime.now()}] ❌ Error: {e}")
+            await asyncio.sleep(1)  # Delay between requests
 
-# Run this loop every 10 minutes, collecting for 5
-async def run_every_10_minutes():
-    while True:
-        print(f"\n=== 🚀 Starting VIN Collection @ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===")
-        await collect_vins_for_5_minutes()
-        print(f"=== 💤 Sleeping for 5 minutes ===\n")
-        await asyncio.sleep(5 * 60)
-
-# Entry point
 if __name__ == "__main__":
-    asyncio.run(run_every_10_minutes())
+    asyncio.run(fetch_vins_forever())
