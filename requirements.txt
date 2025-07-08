@@ -6,3 +6,4 @@ streamlit
 aiohttp
 pandas
 plotly
+aiohttp
